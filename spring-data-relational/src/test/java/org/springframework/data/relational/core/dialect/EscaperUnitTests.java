@@ -71,4 +71,24 @@ public class EscaperUnitTests {
 	public void escapesAdditionalCharacters() {
 		assertThat(Escaper.DEFAULT.withRewriteFor("[", "]").escape("Hello Wo[Rr]ld")).isEqualTo("Hello Wo\\[Rr\\]ld");
 	}
+
+	@Test // GH-2182
+	public void escapesCharactersUsingDefaultEscapeCharacter() {
+		assertThat(Escaper.DEFAULT.escape("%te\\st_")).isEqualTo("\\%te\\\\st\\_");
+	}
+
+	@Test // GH-2182
+	public void escapesCharactersUsingCustomEscapeCharacter() {
+
+		assertThat(Escaper.DEFAULT.escape("%te\\st_")).isEqualTo("\\%te\\\\st\\_");
+		assertThat(Escaper.of('$').escape("%te$st_")).isEqualTo("$%te$$st$_");
+	}
+
+	@Test // GH-2182
+	public void escapedEscapeCharacterCannotReEnableWildcards() {
+
+		// "\%" would otherwise become "\\%": an escaped backslash followed by an active wildcard.
+		assertThat(Escaper.DEFAULT.escape("\\%")).isEqualTo("\\\\\\%");
+		assertThat(Escaper.DEFAULT.escape("\\_")).isEqualTo("\\\\\\_");
+	}
 }
